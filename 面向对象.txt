@@ -1,0 +1,226 @@
+
+					王爱民面向对象高级笔记
+
+【创建对象】
+
+    1.第一种对象字面量的创建方法
+	var obj={
+		name:"王爱民",  //属性
+		age:18,
+		a:function(){  //方法,行为
+			alert("我是obj对象的方法");
+		}
+	}
+
+	将编程的过程想象成一个对象，比如说人，人就是对象，然后有人的属性，年龄，性别……
+	行为也叫方法：你有特长和功能
+
+	获取   对象.属性  对象.方法
+	对象的获取是
+		对象.属性名，可以调取对象的值
+		对象.方法名-可以调取对象的方法（函数）
+
+	特点：实现封装，继承，多态
+			
+    2.第二种对象字面量的创建方法
+	var obj2=new Object();
+		obj2.name="王爱民";
+		obj2.age=17;
+		obj2.a=function(){
+		    alert("我是obj2的方法")
+		}
+
+		for(index in obj2){
+		    alert(obj2[index])
+		}
+
+	用for…in能遍历到这个对象,但是它没有长度
+		alert(obj2["name"]+obj2["age"])
+
+	它的寻址方法有两种：
+		1、对象.属性……
+		2、关联数组……
+
+
+【操作对象】
+
+	var obj3=new Object();
+		obj3.name="王爱民";      //添加属性
+		obj3.age="18";           //添加属性
+		obj3.runs=function(){    //创建方法
+			return this.name+this.age;
+		}
+
+		var obj4=obj3;
+		obj4.name="张鑫";        //添加属性
+		obj4.age="18";           //添加属性
+		obj4.runs=function(){    //创建方法
+			return this.name+this.age;
+		}
+		alert(obj3.runs());  张鑫 18
+		alert(obj4.runs())   张鑫 18
+		    
+		这个时候两个对象的变量就共享了，obj4把obj3里的变量覆盖掉了，弹出了两次黄晓明38
+
+		obj3.name="哈哈！";
+		它们的变量是绝对的共享
+		alert(obj3.runs());   哈哈 18
+		alert(obj4.runs())    哈哈 18
+
+		上面两种方法都有问题，怎样解决多个声明重复的问题请参考下一节，工厂模式	
+
+【构造函数】
+
+	var obj={
+		name:"王爱民",
+		age:"18",
+		get:function(na,ag){
+		// 构造函数也叫构造方法，改变属性的值
+			this.name=na;
+			this.age=ag;
+		},
+		put:function(){
+			return this.name+this.age;
+		}
+	}
+		alert(obj.put());
+		obj.get("张鑫",18);
+		alert(obj.put());
+		obj.get("张鑫鑫",1888);
+		alert(obj.put());
+
+【工厂模式-原型】
+
+		function createObject(name,age){
+		  	var obj=new Object();  //创建对象
+		  	obj.name=name;         //属性
+		  	obj.age=age;		   //属性
+		  	obj.runs=function(){   //方法
+		  		return this.name+this.age;
+		  	}
+		  	return obj;            //返回对象引用，如果没有就无法实例化对象了
+		}
+		var data1=createObject("王爱民","18");
+		var data2=createObject("张鑫","18");
+		//alert(data1.runs());
+		//alert(data2.runs());
+		alert(data1.runs()===data2.runs()) //方法不是共享的
+		//如果弹出data1和data2的类型时都是object，所以无法区分是哪个对象实例化的
+		alert(typeof data1); //因为上面返回的是obj，obj是对象
+		alert(typeof data2);
+		alert(data1 instanceof Object)  //true，因为data1属于object类型
+		alert(data2 instanceof Object);
+		//假如把createObject对象在赋值一个改成createObject2，同样方法用
+		//data3变量来调用，传值，这时就搞不明到底是哪个对象的值了
+
+		/*原型*/
+		/*我们创建每一个函数都有一个prototype（原型）属性，作用是共享属性和方法，其实这个属			性就是另一个对象的引用，不管申明了多少对象，我的属性都是共享的*/
+
+		function Person(){
+		}
+		    Person.prototype.name = 'Jack';//使用原型来添加属性
+		    Person.prototype.age = 29;
+		    Person.prototype.getName = function(){
+		    return this.name;
+		}
+		var person1 = new Person();
+		alert(person1.getName());//Jack
+		var person2 = new Person();
+		alert(person1.getName === person2.getName);
+		//true;共享一个原型对象的方法
+
+【重点】 王爱民总结:用工厂模式无法共享属性和方法，而用原型实例化之后可以共享
+
+【继承】
+ 	1、构造函数绑定
+		//第一种方法也是最简单的方法，使用call或apply方法，将父对象的构造函数绑定在子对象上，即在		  	  子对象构造函数中加:
+		function person(){ //人的函数
+               		this.types = "人类";  //属性
+			this.put=function(){  //方法
+			   	return this.types;
+			}
+		}
+
+		function black(name,color){  //其中一个人
+		　　　　//person.apply(this, arguments);
+			person.call(this)
+			　　　　this.name = name;
+			　　　　this.color = color;
+		}
+
+		var jk = new black("jeck","黑色");
+		alert(jk.types); // 人类
+		alert(jk.put());
+
+	2.prototype模式
+		function person(){
+			this.types = "人类";
+		}
+		function black(name,color){
+		 	　 this.name = name;
+		 	　 this.color = color;
+		}
+		black.prototype = new person();
+		//将black的prototype对象指向一个person的实例
+
+		black.prototype.constructor = black;
+		//constructor可以指定构造函数是谁
+
+		var color = new black("jeck","黑色");
+		alert(color.types);   // 人类
+	3、prototype直接继承
+		function person(){ }
+		　　	person.prototype.types = "人物";
+		function black(name,color){
+		        this.name = name;
+		        this.color = color;
+		}
+		black.prototype = person.prototype;
+		black.prototype.constructor = black;
+		var c1 = new black("jeck","黑色");
+		alert(c1.types); // 人物
+
+obj={} new 构造函数 工厂模式 原型
+
+【多态】
+	var MyClass=function(){
+		var AddNum=function(a,b){ //函数
+			return a+b;
+		}
+		var AddString=function(a,b){//函数
+			return "这是字符串结果"+a+b;
+		}
+		this.Add=function(a,b){? //方法
+			if(typeof(a)=="number")
+				return AddNum(a,b);
+			}else{
+				return AddString(a,b);
+			}
+		}
+	}
+
+	var MyObj = new MyClass();
+	var X = MyObj.Add(5,6);
+	var Y = MyObj.Add("A","FFFFFF");
+	alert(X); //结果：11
+	alert(Y); //结果：I am hereAFFFFFF
+			
+	// 通过函数的arguments属性实现重载?
+	function add() {
+		var sum = 0 ;
+		for ( var i = 0 ; i < arguments.length; i ++ ) {
+			sum += arguments[i];
+		}
+		return sum;
+	}
+			
+		alert(add());
+		alert(add( 1 , 2 ));
+		alert(add( 1 , 2 , 3 ));
+	
+
+
+
+
+
+
